@@ -17,14 +17,14 @@ void get_sfcx_config(sfcx_config *sfc) {
 	sfc->meta_sz = 0x10;
 	sfc->page_sz_phys = sfc->page_sz + sfc->meta_sz;
 
-  Serial.print("config: 0x");
-  Serial.println(config, HEX);
+//  Serial.print("config: 0x");
+//  Serial.println(config, HEX);
 
-  Serial.print("((config >> 17) & 0x03): 0x");
-  Serial.println(((config >> 17) & 0x03), HEX);
+//  Serial.print("((config >> 17) & 0x03): 0x");
+//  Serial.println(((config >> 17) & 0x03), HEX);
 
-  Serial.print("((config >> 4) & 0x3): 0x");
-  Serial.println(((config >> 4) & 0x3), HEX);
+//  Serial.print("((config >> 4) & 0x3): 0x");
+//  Serial.println(((config >> 4) & 0x3), HEX);
 
   switch ((config >> 17) & 0x03) {
 	  case 0: // Small block original SFC (pre jasper)
@@ -55,54 +55,54 @@ void get_sfcx_config(sfcx_config *sfc) {
 	sfc->size_bytes_phys = sfc->block_sz_phys * sfc->size_blocks;
 	sfc->size_mb = sfc->size_bytes >> 20;
 
-  Serial.print("config: 0x");
-  Serial.println(config, HEX);
+//  Serial.print("config: 0x");
+//  Serial.println(config, HEX);
 
-  Serial.print("sfc->page_sz: 0x");
-  Serial.println(sfc->page_sz, HEX);
+//  Serial.print("sfc->page_sz: 0x");
+//  Serial.println(sfc->page_sz, HEX);
 
-  Serial.print("sfc->meta_sz: 0x");
-  Serial.println(sfc->meta_sz, HEX);
+//  Serial.print("sfc->meta_sz: 0x");
+//  Serial.println(sfc->meta_sz, HEX);
 
-  Serial.print("sfc->page_sz_phys: 0x");
-  Serial.println(sfc->page_sz_phys, HEX);
+//  Serial.print("sfc->page_sz_phys: 0x");
+//  Serial.println(sfc->page_sz_phys, HEX);
 
-  Serial.print("sfc->pages_in_block: 0x");
-  Serial.println(sfc->pages_in_block, HEX);
+//  Serial.print("sfc->pages_in_block: 0x");
+//  Serial.println(sfc->pages_in_block, HEX);
 
-  Serial.print("sfc->block_sz: 0x");
-  Serial.println(sfc->block_sz, HEX);
+//  Serial.print("sfc->block_sz: 0x");
+//  Serial.println(sfc->block_sz, HEX);
 
-  Serial.print("sfc->block_sz_phys: 0x");
-  Serial.println(sfc->block_sz_phys, HEX);
+//  Serial.print("sfc->block_sz_phys: 0x");
+//  Serial.println(sfc->block_sz_phys, HEX);
 
-  Serial.print("sfc->size_mb: ");
-  Serial.print(sfc->size_mb, DEC);
-  Serial.println("mb");
+//  Serial.print("sfc->size_mb: ");
+//  Serial.print(sfc->size_mb, DEC);
+//  Serial.println("mb");
 
-  Serial.print("sfc->size_bytes: 0x");
-  Serial.println(sfc->size_bytes, HEX);
+//  Serial.print("sfc->size_bytes: 0x");
+//  Serial.println(sfc->size_bytes, HEX);
 
-  Serial.print("sfc->size_bytes_phys: 0x");
-  Serial.println(sfc->size_bytes_phys, HEX);
+//  Serial.print("sfc->size_bytes_phys: 0x");
+//  Serial.println(sfc->size_bytes_phys, HEX);
 
-  Serial.print("sfc->size_pages: 0x");
-  Serial.println(sfc->size_pages, HEX);
+//  Serial.print("sfc->size_pages: 0x");
+//  Serial.println(sfc->size_pages, HEX);
 
-  Serial.print("sfc->size_blocks: 0x");
-  Serial.println(sfc->size_blocks, HEX);
+//  Serial.print("sfc->size_blocks: 0x");
+//  Serial.println(sfc->size_blocks, HEX);
 
-  Serial.print("sfc->blocks_per_lg_block: 0x");
-  Serial.println(sfc->blocks_per_lg_block, HEX);
+//  Serial.print("sfc->blocks_per_lg_block: 0x");
+//  Serial.println(sfc->blocks_per_lg_block, HEX);
 
-  Serial.print("sfc->size_usable_fs: 0x");
-  Serial.println(sfc->size_usable_fs, HEX);
+//  Serial.print("sfc->size_usable_fs: 0x");
+//  Serial.println(sfc->size_usable_fs, HEX);
 
-  Serial.print("sfc->addr_config: 0x");
-  Serial.println(sfc->addr_config, HEX);
+//  Serial.print("sfc->addr_config: 0x");
+//  Serial.println(sfc->addr_config, HEX);
 
-  Serial.print("sfc->len_config: 0x");
-  Serial.println(sfc->len_config, HEX);
+//  Serial.print("sfc->len_config: 0x");
+//  Serial.println(sfc->len_config, HEX);
 }
 
 void Dump32(uint32_t val) {
@@ -121,10 +121,10 @@ void Dump32(uint32_t val) {
   
 }
 
-void NandReadCB(uint32_t block, uint32_t len) {
+int NandReadCB(uint32_t block, uint32_t len) {
 	len /= 4;
 
-  DWORD nextBlock = block << 5;
+  DWORD nextBlock = block;
   BYTE wordsLeft = 0;
   WORD status = 0;
 
@@ -140,12 +140,14 @@ void NandReadCB(uint32_t block, uint32_t len) {
         if (status & 0x40) {
           Serial.print(" * Bad block found at: 0x");
           Serial.println(block, HEX);
+          return -1;
         }
         else if (status & 0x1c) {
           Serial.print(" * (corrected) ECC error 0x");
           Serial.print(block, HEX);
           Serial.print(" : 0x");
           Serial.println(status, HEX);
+          return -1;
         }
         /*else if (!raw && (status & 0x800)) {
           Serial.print(" * illegal logical block 0x");
@@ -158,11 +160,12 @@ void NandReadCB(uint32_t block, uint32_t len) {
         Serial.print(block, HEX);
         Serial.print(" : 0x");
         Serial.println(status, HEX);
+        return -1;
       }
     }
     else {
-      Serial.print("Read page 0x");
-      Serial.println(block, HEX);
+      //Serial.print("Read page 0x");
+      //Serial.println(block, HEX);
     }
 
       }
@@ -175,10 +178,17 @@ void NandReadCB(uint32_t block, uint32_t len) {
 		XNANDReadProcess((BYTE *)&buffer, 1);
     
     //Dump32(buffer);
+    BYTE *p = (BYTE *)&buffer;
+    Serial.write(*p++);
+    Serial.write(*p++);
+    Serial.write(*p++);
+    Serial.write(*p++);
 
 		wordsLeft-=readnow;
 		len-=readnow;
 	}
+
+  return 0;
 }
 
 void DumpHex(uint8_t *buffer, size_t len) {
@@ -199,16 +209,13 @@ void DumpHex(uint8_t *buffer, size_t len) {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Native USB only
   }
 
-  Serial.println("butt");
-
   XSPIInit();
-  Serial.println("hello?");
 
   XSPIEnterFlashMode();
 
@@ -218,8 +225,8 @@ void setup() {
 
   //BYTE *buffer = new BYTE[sfc.page_sz_phys];
 
-  for (size_t i = 0; i < sfc.size_pages; i++) {
-    NandReadCB(i, sfc.page_sz_phys);
+  for (uint32_t i = 0; i < sfc.size_pages; i++) {
+    NandReadCB(i, 0x210);
   }
 }
 

@@ -36,8 +36,8 @@ WORD XNANDReadStart(DWORD block)
 
 	XSPIWriteDWORD(0x0C, block << 9);
 
-	XSPIWriteByte(0x08, 0x03);
-    //XSPIWriteByte(0x08, 0x02);
+	//XSPIWriteByte(0x08, 0x03);
+    XSPIWriteByte(0x08, 0x02);
 
 	while((status = XNANDGetStatus()) & 1) {
         //
