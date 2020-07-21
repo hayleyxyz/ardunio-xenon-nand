@@ -22,6 +22,8 @@
 
 //#define MISO	PORTBbits.RB2
 
+#define Delay1KTCYx(x) delay(100)
+#define Delay10KTCYx(x) delay(100)
 
 void XSPIInit()
 {
@@ -33,6 +35,7 @@ void XSPIInit()
     pinMode(SS_PIN, OUTPUT);
     pinMode(SCK_PIN, OUTPUT);
     pinMode(MOSI_PIN, OUTPUT);
+    pinMode(MISO_PIN, INPUT);
 }
 
 void XSPIPowerUp()
@@ -181,35 +184,35 @@ BYTE XSPIR()
 	MOSILo;
 	
 	SCKHi;
-	i |= MISO?0x01:0x00;
+	i |= digitalRead(MISO_PIN)?0x01:0x00;
 	SCKLo;	
 	
 	SCKHi;
-	i |= MISO?0x02:0x00;
+	i |= digitalRead(MISO_PIN)?0x02:0x00;
 	SCKLo;
 	
 	SCKHi;
-	i |= MISO?0x04:0x00;
+	i |= digitalRead(MISO_PIN)?0x04:0x00;
 	SCKLo;
 	
 	SCKHi;
-	i |= MISO?0x08:0x00;
+	i |= digitalRead(MISO_PIN)?0x08:0x00;
 	SCKLo;
 	
 	SCKHi;
-	i |= MISO?0x10:0x00;
+	i |= digitalRead(MISO_PIN)?0x10:0x00;
 	SCKLo;
 	
 	SCKHi;
-	i |= MISO?0x20:0x00;
+	i |= digitalRead(MISO_PIN)?0x20:0x00;
 	SCKLo;
 
 	SCKHi;
-	i |= MISO?0x40:0x00;	
+	i |= digitalRead(MISO_PIN)?0x40:0x00;	
 	SCKLo;
 	
 	SCKHi;
-	i |= MISO?0x80:0x00;
+	i |= digitalRead(MISO_PIN)?0x80:0x00;
 	SCKLo;
 	
 	return i;

@@ -1,5 +1,7 @@
 #pragma once
 
+typedef enum _BOOL { FALSE = 0, TRUE } BOOL;	// Undefined size
+
 typedef unsigned char		BYTE;				// 8-bit unsigned
 typedef unsigned short int	WORD;				// 16-bit unsigned
 typedef unsigned long		DWORD;				// 32-bit unsigned
