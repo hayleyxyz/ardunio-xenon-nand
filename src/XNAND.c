@@ -8,7 +8,7 @@ BOOL XNANDWaitReady(WORD timeout)
 	do {
 		if (!(XSPIReadByte(0x04) & 0x01))
 			return TRUE;
-	} while (timeout--);
+	} while (1);
 
 	return FALSE;
 }
@@ -30,21 +30,24 @@ WORD XNANDReadStart(DWORD block)
 {
 	WORD res;
 	WORD tries = 0x1000;
+    WORD status = 0;
 
 	XNANDClearStatus();
 
 	XSPIWriteDWORD(0x0C, block << 9);
 
 	XSPIWriteByte(0x08, 0x03);
+    //XSPIWriteByte(0x08, 0x02);
 
-	if (!XNANDWaitReady(0x1000))
-		return 0x8011;
+	while((status = XNANDGetStatus()) & 1) {
+        //
+    }
 
-	res = XNANDGetStatus();
+	
 
 	XSPIWrite0(0x0C);
 
-	return res;
+	return status;
 }
 
 void XNANDReadProcess(BYTE *buffer, BYTE words) {
@@ -125,4 +128,12 @@ WORD XNANDWriteExecute(DWORD block) {
 		return 0x8021;
 
 	return XNANDGetStatus();	
+}
+
+DWORD XNANDGetConfig() {
+    DWORD config = 0;
+    XSPIRead(0, (BYTE *)&config);
+    XSPIRead(0, (BYTE *)&config);
+
+    return config;
 }
