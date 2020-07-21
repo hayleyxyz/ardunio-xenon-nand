@@ -22,7 +22,7 @@
 
 //#define MISO	PORTBbits.RB2
 
-#define Delay1KTCYx(x) delay(100)
+#define Delay1KTCYx(x) (void)x
 #define Delay10KTCYx(x) delay(100)
 
 void XSPIInit()

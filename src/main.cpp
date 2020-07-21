@@ -121,7 +121,7 @@ void Dump32(uint32_t val) {
   
 }
 
-int NandReadCB(uint32_t block, uint32_t len) {
+WORD NandReadCB(uint32_t block, uint32_t len) {
 	len /= 4;
 
   DWORD nextBlock = block;
@@ -138,29 +138,29 @@ int NandReadCB(uint32_t block, uint32_t len) {
 
         if (status != 0x200) {
         if (status & 0x40) {
-          Serial.print(" * Bad block found at: 0x");
-          Serial.println(block, HEX);
-          return -1;
+          //Serial.print(" * Bad block found at: 0x");
+          //Serial.println(block, HEX);
+          return status;
         }
         else if (status & 0x1c) {
-          Serial.print(" * (corrected) ECC error 0x");
-          Serial.print(block, HEX);
-          Serial.print(" : 0x");
-          Serial.println(status, HEX);
-          return -1;
+          //Serial.print(" * (corrected) ECC error 0x");
+          //Serial.print(block, HEX);
+          //Serial.print(" : 0x");
+          //Serial.println(status, HEX);
+          return status;
         }
         /*else if (!raw && (status & 0x800)) {
-          Serial.print(" * illegal logical block 0x");
-          Serial.print(block, HEX);
-          Serial.print(" : 0x");
-          Serial.println(status, HEX);
+          //Serial.print(" * illegal logical block 0x");
+          //Serial.print(block, HEX);
+          //Serial.print(" : 0x");
+          //Serial.println(status, HEX);
         }*/
       else {
-        Serial.print(" * Unknown error at %08x: %08x. Please worry 0x");
-        Serial.print(block, HEX);
-        Serial.print(" : 0x");
-        Serial.println(status, HEX);
-        return -1;
+        //Serial.print(" * Unknown error at %08x: %08x. Please worry 0x");
+        //Serial.print(block, HEX);
+        //Serial.print(" : 0x");
+        //Serial.println(status, HEX);
+        return status;
       }
     }
     else {
@@ -168,8 +168,7 @@ int NandReadCB(uint32_t block, uint32_t len) {
       //Serial.println(block, HEX);
     }
 
-      }
-
+    }
       
 
     DWORD buffer = 0;
@@ -211,13 +210,12 @@ void DumpHex(uint8_t *buffer, size_t len) {
 void setup() {
   Serial.begin(115200);
 
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Native USB only
-  }
-
   XSPIInit();
 
   XSPIEnterFlashMode();
+
+/*
+  
 
   sfcx_config sfc = {0};
 
@@ -228,8 +226,56 @@ void setup() {
   for (uint32_t i = 0; i < sfc.size_pages; i++) {
     NandReadCB(i, 0x210);
   }
+  */
+}
+
+struct Command {
+  u8 Id;
+  u32 ArgA;
+};
+
+static const u8 CMD_CONFIG = 0x01;
+static const u8 CMD_READ_PAGE = 0x02;
+
+void writeLength(u32 length) {
+  Serial.write((length >> 0) & 0xff);
+  Serial.write((length >> 8) & 0xff);
+  Serial.write((length >> 16) & 0xff);
+  Serial.write((length >> 24) & 0xff);
+}
+
+u32 read32() {
+  u32 result = 0;
+  Serial.readBytes((uint8_t *)&result, 4);
+  return result;
 }
 
 void loop() {
+  switch(Serial.read()) {
+    case CMD_CONFIG: {
+      sfcx_config config {0};
+      get_sfcx_config(&config);
+      u32 len = (u32)sizeof(sfcx_config);
+      
+      writeLength(len);
 
+      u8 *p = (u8 *)&config;
+      for (u32 i = 0; i < sizeof(sfcx_config); i++) {
+        Serial.write(*p++);
+      }
+
+      break;
+    }
+
+    case CMD_READ_PAGE: {
+      u32 len = (u32)0x210ul;
+
+      u32 page = read32();
+
+      writeLength(len);
+      NandReadCB(page, 0x210);
+
+      break;
+    }
+  }
 }
